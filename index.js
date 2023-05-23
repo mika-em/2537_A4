@@ -1,71 +1,215 @@
-const setup = () => {
-    const URL = "https://pokeapi.co/api/v2/pokemon"
-    const pokeNames = []
-    const pokeImages = []
-    const pairs = 0
+function setup() {
+    let firstCard = undefined;
+    let secondCard = undefined;
+    let numPairs = 0;
+    let pairsMatched = 0;
+    let clicks = 0;
+    let gameStarted = false;
+    let powerUpActive = false;
+    let timerInterval = undefined;
 
+    const baseURL = 'https://pokeapi.co/api/v2/pokemon';
+    const cardImages = [];
 
+    async function fetchRandomPokemon() {
+        try {
+            const response = await fetch(`${baseURL}?limit=${numPairs}`);
+            const data = await response.json();
+            const randomPokemon = getRandomElements(data.results, numPairs);
 
-const getRandomElements = async (array, numElements) => {
-    const shuffled = array.sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, numElements);
-};
+            for (let i = 0; i < numPairs; i++) {
+                const pokemon = randomPokemon[i];
+                const pokemonURL = pokemon.url;
 
-const shuffle = async (array) => {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
+                const pokemonResponse = await fetch(pokemonURL);
+                const pokemonData = await pokemonResponse.json();
+
+                const pokemonImage = pokemonData.sprites.front_default;
+
+                cardImages.push(pokemonImage);
+                cardImages.push(pokemonImage);
+            }
+
+            shuffleArray(cardImages);
+            populateCards();
+        } catch (error) {
+            console.log('Error fetching random Pokémon:', error);
+        }
     }
-};
 
-const fetchRandomPokemon = async () => {
-    try {
-        const response = await fetch(`${URL}?limit=${pairs}`);
-        const pokedata = await response.json();
-        const pokeArray = getRandomElements(pokedata.results, pairs);
+    function getRandomElements(array, numElements) {
+        const shuffled = array.sort(() => 0.5 - Math.random());
+        return shuffled.slice(0, numElements);
+    }
 
-        for (let i = 0; i < pairs; i++) {
-            const pokemon = pokeArray[i];
-            const pokeURL = pokemon.url;
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+    }
 
-            const pokeResponse = await fetch(pokeURL);
-            const pokeData = await pokeResponse.json();
-            const pokeName = pokeData.name;
-            const pokeImage = pokeData.sprites.front_default;
+    function populateCards() {
+        const gameGrid = $('#game_grid');
+        gameGrid.empty();
 
-            pokeNames.push(pokeName);
-            pokeImages.push(pokeImage);
-            pokeNames.push(pokeName);
-            pokeImages.push(pokeImage);
+        for (let i = 0; i < numPairs * 2; i++) {
+            const card = $('<div>').addClass('card');
+            const frontFace = $('<img>').addClass('front_face');
+            const backFace = $('<img>').addClass('back_face').attr('src', 'back.webp');
+
+            frontFace.attr('src', cardImages[i]);
+
+            card.append(frontFace);
+            card.append(backFace);
+
+            gameGrid.append(card);
         }
 
-        shuffle(pokeImage);
-        populateCards();
-    } catch (error) {
-        console.log(error);
+        addCardClickListeners();
     }
-};
 
+    function addCardClickListeners() {
+        $('.card').on('click', function () {
+            if (!gameStarted) {
+                startTimer();
+                gameStarted = true;
+            }
 
+            if ($(this).hasClass('flip') || $(this).hasClass('matched')) {
+                return;
+            }
 
-const populateCards = async () => {
-    const gameBoard = $("#game-board");
-    gameBoard.empty();
+            $(this).toggleClass('flip');
+            const clickedCardSrc = $(this).find('.front_face').attr('src');
 
-    for (let i = 0; i < pairs * 2; i++) {
-        const pokeCard = $("<div>").addClass("poke-card");
-        const front = $('<img>').addClass('front');
-        const back = $('<img>').addClass('back').attrc('src', '/images/back.webp');
+            if (!firstCard) {
+                firstCard = clickedCardSrc;
+            } else {
+                secondCard = clickedCardSrc;
+                clicks++;
 
-        front.attrc('src', pokeImages[i]);
-        pokeCard.attr('data-pokemon-name', pokeNames[i]);
+                $('.clicks span').text(clicks);
 
-        pokeCard.append(front, back);
+                if (firstCard === secondCard) {
+                    pairsMatched++;
+                    $('.matched-pairs span').text(pairsMatched);
 
-        gameBoard.append(pokeCard);
+                    $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('matched');
+                    $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('matched');
+
+                    if (pairsMatched === numPairs) {
+                        stopTimer();
+                        showWinningMessage();
+                    }
+                } else {
+                    setTimeout(() => {
+                        $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('flip');
+                        $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('flip');
+                    }, 1000);
+                }
+
+                firstCard = undefined;
+                secondCard = undefined;
+            }
+        });
     }
-    clickCards();
-};
-};
 
-$(document).ready(setup);
+    function startTimer() {
+        const startTime = new Date().getTime();
+
+        timerInterval = setInterval(() => {
+            const currentTime = new Date().getTime();
+            const elapsedTime = currentTime - startTime;
+
+            const minutes = Math.floor(elapsedTime / 60000);
+            const seconds = Math.floor((elapsedTime % 60000) / 1000);
+
+            const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+            const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
+
+            $('.timer').text(`${minutesStr}:${secondsStr}`);
+        }, 1000);
+    }
+
+    function stopTimer() {
+        clearInterval(timerInterval);
+    }
+
+    function showWinningMessage() {
+        alert('Congratulations! You won the game!');
+    }
+
+    function startGame(difficulty) {
+        switch (difficulty) {
+            case 'easy':
+                numPairs = 3;
+                break;
+            case 'medium':
+                numPairs = 6;
+                break;
+            case 'hard':
+                numPairs = 9;
+                break;
+            default:
+                numPairs = 3;
+        }
+
+        fetchRandomPokemon();
+        resetGame();
+    }
+
+    function resetGame() {
+        firstCard = undefined;
+        secondCard = undefined;
+        pairsMatched = 0;
+        clicks = 0;
+        gameStarted = false;
+        powerUpActive = false;
+
+        $('.clicks span').text(clicks);
+        $('.matched-pairs span').text(pairsMatched);
+        $('.left-pairs span').text(numPairs);
+        $('.timer').text('00:00');
+
+        stopTimer();
+
+        $('.card').removeClass('flip matched');
+    }
+
+    function applyTheme(theme) {
+        $('body').removeClass().addClass('theme-' + theme);
+        $('header').removeClass().addClass('theme-' + theme);
+        $('h1').removeClass().addClass('theme-' + theme);
+    }
+
+    function activatePowerUp() {
+        if (!powerUpActive) {
+            $('.card').addClass('flip');
+            setTimeout(() => {
+                $('.card').removeClass('flip');
+                powerUpActive = false;
+            }, 3000);
+
+            powerUpActive = true;
+        }
+    }
+
+    $(document).ready(() => {
+        $('.start').on('click', () => {
+            const selectedDifficulty = $('.levels').val();
+            startGame(selectedDifficulty);
+        });
+
+        $('.reset').on('click', resetGame);
+
+        $('.theme').on('change', () => {
+            const selectedTheme = $('.theme').val();
+            applyTheme(selectedTheme);
+        });
+
+        $('.power-up').on('click', activatePowerUp);
+    });
+}
+
+setup();
