@@ -5,40 +5,48 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>My Pokemon Game</title>
     <link rel="stylesheet" href="style.css">
     <!-- import jQuery -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="index.js"></script>
+    <!-- import bootstrap 5.3 -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/5.0.0-beta3/css/bootstrap.min.css">
 </head>
 
-<body>
-    <div id="game_grid">
-        <div class="card">
-            <img id="img1" class="front_face" src="001.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
+<body="dark-theme">
+    <div class="container d-flex" id="game_grid">
         </div>
-        <div class="card">
-            <img id="img2" class="front_face" src="002.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
-        </div>
-        <div class="card">
-            <img id="img3" class="front_face" src="003.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
-        </div>
-        <div class="card">
-            <img id="img4" class="front_face" src="001.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
-        </div>
-        <div class="card">
-            <img id="img5" class="front_face" src="002.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
-        </div>
-        <div class="card">
-            <img id="img6" class="front_face" src="003.png" alt="">
-            <img class="back_face" src="back.webp" alt="">
-        </div>
-    </div>
-</body>
 
+
+        <div class="header">
+<h2>My Pokemon Card Game</h2>
+<div class="game-board">
+    <div class="clicks"> Clicks: <div class="clicks">0</div></div>
+    <div class="pairs"> Matched Pairs: <div class="matched-pairs">0</div></div>
+    <div class="clicks"> Pairs Left to Match: <div class="left-pairs">0</div></div>
+    <div class="clicks"> Time Lect: <div class="timer">00 : 00</div></div>
+</div>
+</div>
+
+<div class="game-controls">
+    <select class="levels">
+        <option value="easy">Easy</option>
+        <option value="medium">Medium</option>
+        <option value="hard">Hard</option>
+    </select>
+</div>
+
+<button class="start">Start Game!</button>
+<button class="reset">Reset Game</button>
+<select class="theme">
+    <option value="dark">Dark Theme</option>
+    <option value="light">Light Theme</option>
+</select>
+<button class="power-up">Power Up!</button>
+</div>
+
+<!-- import index.js -->
+<script src="index.js"></script>
+</body>
 </html>

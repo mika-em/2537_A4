@@ -1,30 +1,71 @@
 const setup = () => {
-    let firstCard = undefined
-    let secondCard = undefined
-    $(".card").on(("click"), function () {
-        $(this).toggleClass("flip");
+    const URL = "https://pokeapi.co/api/v2/pokemon"
+    const pokeNames = []
+    const pokeImages = []
+    const pairs = 0
 
-        if (!firstCard)
-            firstCard = $(this).find(".front_face")[0]
-        else {
-            secondCard = $(this).find(".front_face")[0]
-            console.log(firstCard, secondCard);
-            if (
-                firstCard.src ==
-                secondCard.src
-            ) {
-                console.log("match")
-                $(`#${firstCard.id}`).parent().off("click")
-                $(`#${secondCard.id}`).parent().off("click")
-            } else {
-                console.log("no match")
-                setTimeout(() => {
-                    $(`#${firstCard.id}`).parent().toggleClass("flip")
-                    $(`#${secondCard.id}`).parent().toggleClass("flip")
-                }, 1000)
-            }
+
+
+const getRandomElements = async (array, numElements) => {
+    const shuffled = array.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, numElements);
+};
+
+const shuffle = async (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+};
+
+const fetchRandomPokemon = async () => {
+    try {
+        const response = await fetch(`${URL}?limit=${pairs}`);
+        const pokedata = await response.json();
+        const pokeArray = getRandomElements(pokedata.results, pairs);
+
+        for (let i = 0; i < pairs; i++) {
+            const pokemon = pokeArray[i];
+            const pokeURL = pokemon.url;
+
+            const pokeResponse = await fetch(pokeURL);
+            const pokeData = await pokeResponse.json();
+            const pokeName = pokeData.name;
+            const pokeImage = pokeData.sprites.front_default;
+
+            pokeNames.push(pokeName);
+            pokeImages.push(pokeImage);
+            pokeNames.push(pokeName);
+            pokeImages.push(pokeImage);
         }
-    });
-}
 
-$(document).ready(setup)
+        shuffle(pokeImage);
+        populateCards();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+
+const populateCards = async () => {
+    const gameBoard = $("#game-board");
+    gameBoard.empty();
+
+    for (let i = 0; i < pairs * 2; i++) {
+        const pokeCard = $("<div>").addClass("poke-card");
+        const front = $('<img>').addClass('front');
+        const back = $('<img>').addClass('back').attrc('src', '/images/back.webp');
+
+        front.attrc('src', pokeImages[i]);
+        pokeCard.attr('data-pokemon-name', pokeNames[i]);
+
+        pokeCard.append(front, back);
+
+        gameBoard.append(pokeCard);
+    }
+    clickCards();
+};
+};
+
+$(document).ready(setup);
