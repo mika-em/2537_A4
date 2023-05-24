@@ -1,215 +1,243 @@
-function setup() {
-    let firstCard = undefined;
-    let secondCard = undefined;
-    let numPairs = 0;
-    let pairsMatched = 0;
-    let clicks = 0;
-    let gameStarted = false;
-    let powerUpActive = false;
-    let timerInterval = undefined;
+let firstCard = undefined;
+let secondCard = undefined;
+let pairs = 0;
+let num_matchedPairs = 0;
+let clicks = 0;
+let start = false;
+let powerUp = false;
+let timer = undefined;
 
-    const baseURL = 'https://pokeapi.co/api/v2/pokemon';
-    const cardImages = [];
+//Randomizer Function
+const getRandomElements = (array, numElements) => {
+    const shuffled = array.sort(() => 0.5 - Math.random());
+    return shuffled.slice(0, numElements);
+};
 
-    async function fetchRandomPokemon() {
-        try {
-            const response = await fetch(`${baseURL}?limit=${numPairs}`);
-            const data = await response.json();
-            const randomPokemon = getRandomElements(data.results, numPairs);
+//Shuffle Function
+const shuffleArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+};
 
-            for (let i = 0; i < numPairs; i++) {
-                const pokemon = randomPokemon[i];
-                const pokemonURL = pokemon.url;
+//Start Game Timer Function
+const startTime = () => {
+    const startTime = new Date().getTime();
 
-                const pokemonResponse = await fetch(pokemonURL);
-                const pokemonData = await pokemonResponse.json();
+    timer = setInterval(() => {
+        const currentTime = new Date().getTime();
+        const elapsedTime = currentTime - startTime;
 
-                const pokemonImage = pokemonData.sprites.front_default;
+        const minutes = Math.floor(elapsedTime / 60000);
+        const seconds = Math.floor((elapsedTime % 60000) / 1000);
 
-                cardImages.push(pokemonImage);
-                cardImages.push(pokemonImage);
-            }
+        const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
+        const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
 
-            shuffleArray(cardImages);
-            populateCards();
-        } catch (error) {
-            console.log('Error fetching random Pokémon:', error);
+        $('.timer').text(`${minutesStr}:${secondsStr}`);
+    }, 1000);
+};
+
+//Stop Game Timer Function
+const stopTime = () => {
+    clearInterval(timer);
+};
+
+//Winning Message Function
+const winningMessageAlert = () => {
+    alert('Congratulations! You won the game!');
+};
+
+//Fill Cards Function
+const populateCards = () => {
+    const gameGrid = $('#game_board');
+    gameGrid.empty();
+
+    for (let i = 0; i < pairs * 2; i++) {
+        const card = $('<div>').addClass('card');
+        const frontFace = $('<img>').addClass('front_face');
+        const backFace = $('<img>').addClass('back_face').attr('src', '/images/back.webp');
+
+        frontFace.attr('src', pokeImages[i]);
+
+        card.append(frontFace);
+        card.append(backFace);
+
+        gameGrid.append(card);
+    }
+
+    clickCards();
+};
+
+//Click Cards Function
+const clickCards = () => {
+    $('.card').on('click', function () {
+        if (!start) {
+            startTime();
+            start
+                = true;
         }
-    }
 
-    function getRandomElements(array, numElements) {
-        const shuffled = array.sort(() => 0.5 - Math.random());
-        return shuffled.slice(0, numElements);
-    }
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-    }
-
-    function populateCards() {
-        const gameGrid = $('#game_grid');
-        gameGrid.empty();
-
-        for (let i = 0; i < numPairs * 2; i++) {
-            const card = $('<div>').addClass('card');
-            const frontFace = $('<img>').addClass('front_face');
-            const backFace = $('<img>').addClass('back_face').attr('src', 'back.webp');
-
-            frontFace.attr('src', cardImages[i]);
-
-            card.append(frontFace);
-            card.append(backFace);
-
-            gameGrid.append(card);
+        if ($(this).hasClass('flip') || $(this).hasClass('matched')) {
+            return;
         }
 
-        addCardClickListeners();
-    }
+        $(this).toggleClass('flip');
+        const clickedCardSrc = $(this).find('.front_face').attr('src');
 
-    function addCardClickListeners() {
-        $('.card').on('click', function () {
-            if (!gameStarted) {
-                startTimer();
-                gameStarted = true;
-            }
+        if (!firstCard) {
+            firstCard = clickedCardSrc;
+        } else {
+            secondCard = clickedCardSrc;
+            clicks++;
 
-            if ($(this).hasClass('flip') || $(this).hasClass('matched')) {
-                return;
-            }
 
-            $(this).toggleClass('flip');
-            const clickedCardSrc = $(this).find('.front_face').attr('src');
 
-            if (!firstCard) {
-                firstCard = clickedCardSrc;
-            } else {
-                secondCard = clickedCardSrc;
-                clicks++;
+            $('.clicks').text(clicks);
 
-                $('.clicks span').text(clicks);
+            if (firstCard === secondCard) {
+                num_matchedPairs++;
+                $('.pairs-matched').text(num_matchedPairs);
 
-                if (firstCard === secondCard) {
-                    pairsMatched++;
-                    $('.matched-pairs span').text(pairsMatched);
+                $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('matched');
+                $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('matched');
 
-                    $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('matched');
-                    $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('matched');
-
-                    if (pairsMatched === numPairs) {
-                        stopTimer();
-                        showWinningMessage();
-                    }
-                } else {
-                    setTimeout(() => {
-                        $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('flip');
-                        $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('flip');
-                    }, 1000);
+                if (num_matchedPairs === pairs) {
+                    stopTime();
+                    winningMessageAlert();
                 }
-
-                firstCard = undefined;
-                secondCard = undefined;
+            } else {
+                setTimeout(() => {
+                    $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('flip');
+                    $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('flip');
+                }, 1000);
             }
-        });
-    }
 
-    function startTimer() {
-        const startTime = new Date().getTime();
-
-        timerInterval = setInterval(() => {
-            const currentTime = new Date().getTime();
-            const elapsedTime = currentTime - startTime;
-
-            const minutes = Math.floor(elapsedTime / 60000);
-            const seconds = Math.floor((elapsedTime % 60000) / 1000);
-
-            const minutesStr = minutes < 10 ? `0${minutes}` : `${minutes}`;
-            const secondsStr = seconds < 10 ? `0${seconds}` : `${seconds}`;
-
-            $('.timer').text(`${minutesStr}:${secondsStr}`);
-        }, 1000);
-    }
-
-    function stopTimer() {
-        clearInterval(timerInterval);
-    }
-
-    function showWinningMessage() {
-        alert('Congratulations! You won the game!');
-    }
-
-    function startGame(difficulty) {
-        switch (difficulty) {
-            case 'easy':
-                numPairs = 3;
-                break;
-            case 'medium':
-                numPairs = 6;
-                break;
-            case 'hard':
-                numPairs = 9;
-                break;
-            default:
-                numPairs = 3;
+            firstCard = undefined;
+            secondCard = undefined;
         }
-
-        fetchRandomPokemon();
-        resetGame();
-    }
-
-    function resetGame() {
-        firstCard = undefined;
-        secondCard = undefined;
-        pairsMatched = 0;
-        clicks = 0;
-        gameStarted = false;
-        powerUpActive = false;
-
-        $('.clicks span').text(clicks);
-        $('.matched-pairs span').text(pairsMatched);
-        $('.left-pairs span').text(numPairs);
-        $('.timer').text('00:00');
-
-        stopTimer();
-
-        $('.card').removeClass('flip matched');
-    }
-
-    function applyTheme(theme) {
-        $('body').removeClass().addClass('theme-' + theme);
-        $('header').removeClass().addClass('theme-' + theme);
-        $('h1').removeClass().addClass('theme-' + theme);
-    }
-
-    function activatePowerUp() {
-        if (!powerUpActive) {
-            $('.card').addClass('flip');
-            setTimeout(() => {
-                $('.card').removeClass('flip');
-                powerUpActive = false;
-            }, 3000);
-
-            powerUpActive = true;
-        }
-    }
-
-    $(document).ready(() => {
-        $('.start').on('click', () => {
-            const selectedDifficulty = $('.levels').val();
-            startGame(selectedDifficulty);
-        });
-
-        $('.reset').on('click', resetGame);
-
-        $('.theme').on('change', () => {
-            const selectedTheme = $('.theme').val();
-            applyTheme(selectedTheme);
-        });
-
-        $('.power-up').on('click', activatePowerUp);
     });
-}
+};
+
+//Power Up - Show Cards for 3 Seconds
+const powerUpStart = () => {
+    if (!powerUp) {
+        $('.card').addClass('flip');
+        setTimeout(() => {
+            $('.card').removeClass('flip');
+            powerUp = false;
+        }, 3000);
+
+        powerUp = true;
+    }
+};
+
+//API Stuff
+const pokemonURL = 'https://pokeapi.co/api/v2/pokemon';
+const pokeImages = [];
+
+//Get Pokemons
+const fetchRandomPokemon = async () => {
+    try {
+        const response = await fetch(`${pokemonURL}?limit=${pairs}`);
+        const data = await response.json();
+        const randomPokemon = getRandomElements(data.results, pairs);
+
+        for (let i = 0; i < pairs; i++) {
+            const pokemon = randomPokemon[i];
+            const pokemonURL = pokemon.url;
+
+            const pokemonResponse = await fetch(pokemonURL);
+            const pokemonData = await pokemonResponse.json();
+
+            const pokemonImage = pokemonData.sprites.front_default;
+
+            pokeImages
+                .push(pokemonImage);
+            pokeImages
+                .push(pokemonImage);
+        }
+
+        shuffleArray(pokeImages);
+        populateCards();
+    } catch (error) {
+        console.log('Error fetching random Pokémon:', error);
+    }
+};
+
+//Start Game
+const startGame = async (difficulty) => {
+    switch (difficulty) {
+        case 'E':
+            pairs = 3;
+            break;
+        case 'M':
+            pairs = 6;
+            break;
+        case 'H':
+            pairs = 9;
+            break;
+        default:
+            pairs = 3;
+    }
+
+    await fetchRandomPokemon();
+    resetGame();
+};
+
+//Reset Game
+const resetGame = () => {
+    firstCard = undefined;
+    secondCard = undefined;
+    num_matchedPairs = 0;
+    clicks = 0;
+    start
+        = false;
+    powerUp = false;
+
+    $('.clicks').text(clicks);
+    $('.pairs-matched').text(num_matchedPairs);
+    $('.pairs-left').text(pairs);
+    $('.timer').text('00:00');
+
+    stopTime();
+
+    $('.card').removeClass('flip matched');
+};
+
+const changeTheme = (theme) => {
+    $('body').removeClass();
+    $('body').addClass('theme-' + theme);
+    $('header').removeClass();
+    $('header').addClass('theme-' + theme);
+    $('h1').removeClass();
+    $('h1').addClass('theme-' + theme);
+};
+
+//Event Listeners
+const eventListeners = () => {
+    $('.start').on('click', async () => {
+        const difficultySelector = $('.difficulty-levels').val();
+        await startGame(difficultySelector);
+    });
+
+    $('.reset').on('click', resetGame);
+
+    $('.select-theme').on('change', () => {
+        const selectedTheme = $('.select-theme').val();
+        changeTheme(selectedTheme);
+    });
+
+    $('.power-up').on('click', powerUpStart);
+};
+
+//Setup
+const setup = async () => {
+    $(document).ready(() => {
+        eventListeners();
+        fetchRandomPokemon();
+    });
+};
 
 setup();
