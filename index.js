@@ -75,8 +75,7 @@ const clickCards = () => {
     $('.card').on('click', function () {
         if (!start) {
             startTime();
-            start
-                = true;
+            start = true;
         }
 
         if ($(this).hasClass('flip') || $(this).hasClass('matched')) {
@@ -92,9 +91,7 @@ const clickCards = () => {
             secondCard = clickedCardSrc;
             clicks++;
 
-
-
-            $('.clicks').text(clicks);
+            $('.clicks').text(clicks + 1);
 
             if (firstCard === secondCard) {
                 num_matchedPairs++;
@@ -109,8 +106,7 @@ const clickCards = () => {
                 }
             } else {
                 setTimeout(() => {
-                    $(`.card .front_face[src="${firstCard}"]`).parent('.card').addClass('flip');
-                    $(`.card .front_face[src="${secondCard}"]`).parent('.card').addClass('flip');
+                    $('.flip:not(.matched)').removeClass('flip');
                 }, 1000);
             }
 
@@ -119,6 +115,7 @@ const clickCards = () => {
         }
     });
 };
+
 
 //Power Up - Show Cards for 3 Seconds
 const powerUpStart = () => {

@@ -1,13 +1,13 @@
 /* styles.css */
 
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
+main {
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 15px;
+    margin: 10px;
     padding: 0;
     display: flex;
     flex-direction: column;
     align-items: center;
-    background-color: #f2f2f2;
 }
 
 header {
@@ -24,25 +24,27 @@ h1 {
     justify-content: center;
     align-items: center;
     margin-bottom: 1rem;
+    margin-left: 5px;
 }
 
 .controls label,
 .stats-item .label {
-    margin-right: 0.5rem;
+    margin-right: 5px;
+    margin-left: 5px;
 }
 
 .start,
 .reset,
 .power-up {
-    margin-right: 1rem;
+    margin-right: 10px
 }
 
 .game_board {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-    max-width: 800px;
-    margin-bottom: 1rem;
+    grid-template-columns: repeat(10, 200px);
+    grid-template-rows: repeat(2);
+    margin: 15px;
+    text-align: center;
 }
 
 .card {
@@ -58,7 +60,7 @@ h1 {
 .back_face {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain;
     backface-visibility: hidden;
 }
 
@@ -95,7 +97,6 @@ h1 {
 }
 
 .stats-item .label {
-    font-weight: bold;
     margin-right: 0.3rem;
 }
 
@@ -112,4 +113,19 @@ h1 {
 .theme-light {
     background-color: #f2f2f2;
     color: #333;
+}
+
+.flip-back {
+    animation: flipBack 0.75s;
+}
+
+h1 {
+    margin: 2rem 0;
+    text-align: center;
+    font-size: 2rem;
+    font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+    font-size: 25px;
+    font-weight: 700;
+    margin-top: 150px;
+    margin-bottom: 150px;
 }

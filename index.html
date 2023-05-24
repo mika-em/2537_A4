@@ -16,56 +16,68 @@
     <script src="index.js"></script>
 </head>
 
-<body>
-    <header>
-        <h1>My Pokemon Game</h1>
-    </header>
-
-    <main>
-        <div class="controls me-4">
-            <label for="difficulty">Difficulty:</label>
-            <select class="difficulty-levels" id="difficulty">
+<main>
+    <div class="header mx-5 mt-4 mb-5">
+        <h1 class="text-center">My Pokemon Game</h1>
+    </div>
+    <div class="controls">
+        <div class="d-flex justify-content-center mb-3 mx-5">
+            <label for="difficulty" class="me-3 m-auto">Difficulty:</label>
+            <select class="form-select difficulty-levels m-auto" id="difficulty">
                 <option value="E">Easy</option>
                 <option value="M">Medium</option>
                 <option value="H">Hard</option>
             </select>
+        </div>
 
-            <label for="theme">Theme:</label>
-            <select class="select-theme" id="theme">
+        <div class="d-flex justify-content-center mb-3 ml-3">
+            <label for="theme" class="me-3 m-auto">Theme:</label>
+            <select class="form-select select-theme m-auto" id="theme">
                 <option value="dark">Dark</option>
                 <option value="light">Light</option>
             </select>
-
-            <button class="start">Start Game</button>
-            <button class="reset">Reset Game</button>
-            <button class="power-up">Power Up</button>
         </div>
 
-    <div id="game_board" class="game_board row-2">
+        <div class="d-flex justify-content-center mx-5">
+            <button class="btn btn-primary start">Start Game</button>
+            <button class="btn btn-secondary reset">Reset Game</button>
+            <button class="btn btn-success power-up">Power Up</button>
+        </div>
+    </div>
+
+    <div id="game_board" class="game_board m-auto">
     </div>
 
 
-        <div class="game-stats">
+    <div class="row game-stats">
+        <div class="col">
             <div class="stats-item">
                 <span class="label">Pairs Matched:</span>
                 <span class="pairs-matched">0</span>
             </div>
+        </div>
+        <div class="col">
             <div class="stats-item">
                 <span class="label">Pairs Left:</span>
                 <span class="pairs-left">0</span>
             </div>
+        </div>
+        <div class="col">
             <div class="stats-item">
                 <span class="label">Clicks:</span>
                 <span class="clicks">0</span>
             </div>
+        </div>
+        <div class="col">
             <div class="stats-item">
                 <span class="label">Timer:</span>
                 <span class="timer">00:00</span>
             </div>
         </div>
-    </main>
+    </div>
+</main>
 
-    <script src="script.js"></script>
+<script src="script.js"></script>
 </body>
 
 </html>
